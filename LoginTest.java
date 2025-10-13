@@ -1,3 +1,4 @@
+
 /**
  * Unit tests for the Login class
  * Tests all methods with the specified test data
@@ -11,21 +12,22 @@ public class LoginTest {
         assertTrue(login.checkUserName("kvl_1"));
     }
         
-                    private void assertTrue(boolean checkUserName) {
-               
-                throw new UnsupportedOperationException("Unimplemented method 'assertTrue'");
-            }
-        
-            @Test
+    private void assertTrue(boolean checkUserName) {
+       
+        throw new UnsupportedOperationException("Unimplemented method 'assertTrue'");
+    }
+
+    @Test
     public void testCheckUserNameIncorrectlyFormatted() {
         assertFalse(login.checkUserName("kyle!!!!!!!"));
-            }
+    }
             
-            private void assertFalse(boolean checkUserName) {
-                       
-                        throw new UnsupportedOperationException("Unimplemented method 'assertFalse'");
-                    }
-            // Test password complexity
+    private void assertFalse(boolean checkUserName) {
+      
+        throw new UnsupportedOperationException("Unimplemented method 'assertFalse'");
+    }
+
+    // Test password complexity
     @Test
     public void testCheckPasswordComplexityValid() {
         assertTrue(login.checkPasswordComplexity("Ch&&sec@ke99!"));
@@ -33,7 +35,7 @@ public class LoginTest {
     
     @Test
     public void testCheckPasswordComplexityInvalid() {
-        assertTrue(login.checkPasswordComplexity("password"));
+        assertFalse(login.checkPasswordComplexity("password"));
     }
     
     // Test cell phone validation
@@ -44,7 +46,7 @@ public class LoginTest {
     
     @Test
     public void testCheckCellPhoneNumberInvalid() {
-        assertTrue(login.checkCellPhoneNumber("08966553"));
+        assertFalse(login.checkCellPhoneNumber("08966553"));
     }
     
     // Test registration process
@@ -52,14 +54,14 @@ public class LoginTest {
     public void testRegisterUserSuccessful() {
         String result = login.registerUser("kvl_1", "Ch&&sec@ke99!", "+27838968976");
         assertEquals("User registered successfully.", result);
-            }
+    }
             
-            private void assertEquals(String string, String result) {
-              
-                throw new UnsupportedOperationException("Unimplemented method 'assertEquals'");
-            }
-        
-            @Test
+    private void assertEquals(String string, String result) {
+  
+        throw new UnsupportedOperationException("Unimplemented method 'assertEquals'");
+    }
+
+    @Test
     public void testRegisterUserFailed() {
         String result = login.registerUser("kyle!!!!!!!", "password", "08966553");
         assertTrue(result.contains("Username is not correctly formatted"));
@@ -77,7 +79,7 @@ public class LoginTest {
     @Test
     public void testLoginUserFailed() {
         login.registerUser("kvl_1", "Ch&&sec@ke99!", "+27838968976");
-        assertTrue(login.loginUser("wronguser", "wrongpass"));
+        assertFalse(login.loginUser("wronguser", "wrongpass"));
     }
     
     // Test login status messages
