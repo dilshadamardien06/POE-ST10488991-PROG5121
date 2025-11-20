@@ -2,192 +2,145 @@ import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JOptionPane;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+
 /**
- * QuickChat class - Main messaging system with arrays and JSON storage
- * Handles the chat interface and message management
+ * QuickChat class - Main messaging system with Part 2 & 3 features
+ * Linked to: poe.java (main) and Message.java
  */
 public class QuickChat {
     private List<Message> messages = new ArrayList<>();
     private int totalMessagesSent = 0;
+    
     // Arrays for Part 3 requirements
-    private String[] sentMessages;
-    private String[] disregardedMessages;
-    private String[] storedMessages;
-    private String[] messageHashes;
-    private String[] messageIDs;
+    private String[] sentMessages = new String[100];
+    private String[] disregardedMessages = new String[100];
+    private String[] storedMessages = new String[100];
+    private String[] messageHashes = new String[100];
+    private String[] messageIDs = new String[100];
     
     private int sentCount = 0;
     private int disregardedCount = 0;
     private int storedCount = 0;
     
-    public QuickChat() {
-        // Initialize arrays with reasonable size
-        sentMessages = new String[100];
-        disregardedMessages = new String[100];
-        storedMessages = new String[100];
-        messageHashes = new String[100];
-        messageIDs = new String[100];
-    }
-    
     public void startMessagingSystem(Scanner scanner) {
-        // Load stored messages from JSON
-        loadStoredMessagesFromJSON();
+        showWelcomeNotification();
         
-        // Welcome message with JOptionPane as required
-        showColorfulNotification("🚀 Welcome to QuickChat!", 
-            "Welcome to QuickChat! Let's start messaging.", "info");
-        
-        // Main menu loop
         boolean running = true;
         while (running) {
-            String menuChoice = showMenuDialog();
+            displayMainMenu();
+            System.out.print("Choose an option (1-5): ");
             
-            if (menuChoice == null) {
-                running = false;
-                continue;
-            }
-            
-            switch (menuChoice) {
-                case "1":
-                    sendMessages(scanner);
-                    break;
-                case "2":
-                    showRecentMessages();
-                    break;
-                case "3":
-                    displayMessageReport();
-                    break;
-                case "4":
-                    searchFeatures(scanner);
-                    break;
-                case "5":
-                    running = false;
-                    showColorfulNotification("👋 Goodbye!", 
-                        "Thank you for using QuickChat!", "success");
-                    System.out.println("Thank you for using QuickChat. Goodbye!");
-                    break;
-                default:
-                    showColorfulNotification("❌ Invalid Option", 
-                        "Please choose a valid option (1-5)", "error");
+            try {
+                int choice = scanner.nextInt();
+                scanner.nextLine(); // Clear buffer
+                
+                switch (choice) {
+                    case 1:
+                        sendMessages(scanner);
+                        break;
+                    case 2:
+                        showRecentMessages();
+                        break;
+                    case 3:
+                        displayMessageReport();
+                        break;
+                    case 4:
+                        searchAndManageMessages(scanner);
+                        break;
+                    case 5:
+                        running = false;
+                        showExitNotification();
+                        break;
+                    default:
+                        System.out.println("❌ Invalid option. Please choose 1-5.");
+                }
+            } catch (Exception e) {
+                System.out.println("❌ Invalid input. Please enter a number.");
+                scanner.nextLine(); // Clear invalid input
             }
         }
-    }
-    
-    private String showMenuDialog() {
-        String menu = "<html><div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 10px; color: white; text-align: center;'>" +
-                     "<h2 style='margin: 0;'>🚀 QuickChat Menu</h2>" +
-                     "</div>" +
-                     "<div style='padding: 15px; background: #f8f9fa; border-radius: 5px; margin-top: 10px;'>" +
-                     "<p style='color: #2c3e50; margin: 10px 0;'><b>1)</b> 📤 Send Messages</p>" +
-                     "<p style='color: #2c3e50; margin: 10px 0;'><b>2)</b> 📨 Show Recent Messages</p>" +
-                     "<p style='color: #2c3e50; margin: 10px 0;'><b>3)</b> 📊 Display Message Report</p>" +
-                     "<p style='color: #2c3e50; margin: 10px 0;'><b>4)</b> 🔍 Search Features</p>" +
-                     "<p style='color: #2c3e50; margin: 10px 0;'><b>5)</b> 🚪 Quit</p>" +
-                     "</div>" +
-                     "</html>";
-        
-        return JOptionPane.showInputDialog(null, menu, "💬 QuickChat System", JOptionPane.QUESTION_MESSAGE);
     }
     
     private void sendMessages(Scanner scanner) {
-        String numMessagesStr = JOptionPane.showInputDialog(null, 
-            "How many messages do you wish to send?", "📤 Send Messages", JOptionPane.QUESTION_MESSAGE);
+        System.out.println("\n" + "=".repeat(40));
+        System.out.println("📤 SEND MESSAGES");
+        System.out.println("=".repeat(40));
         
-        if (numMessagesStr == null) return;
+        System.out.print("How many messages do you wish to send? ");
+        int numMessages = scanner.nextInt();
+        scanner.nextLine(); // Clear buffer
         
-        try {
-            int numMessages = Integer.parseInt(numMessagesStr);
-            
-            if (numMessages <= 0) {
-                showColorfulNotification("⚠️ Invalid Number", "Please enter a positive number", "warning");
-                return;
-            }
-            
-            showColorfulNotification("📝 Preparing Messages", 
-                "Preparing to send " + numMessages + " message(s)", "info");
-            
-            // For loop as required - runs for assigned number of messages
-            for (int i = 0; i < numMessages; i++) {
-                System.out.println("\n=== Message " + (i + 1) + " of " + numMessages + " ===");
-                
-                Message message = new Message();
-                
-                // Set recipient
-                System.out.print("Enter recipient cell number: ");
-                String recipient = scanner.nextLine();
-                message.setRecipient(recipient);
-                
-                // Set message content
-                System.out.print("Enter your message (max 250 characters): ");
-                String messageContent = scanner.nextLine();
-                message.setMessageContent(messageContent);
-                
-                // Generate message ID and hash using loop counter
-                message.generateMessageID();
-                message.createMessageHash(i + 1); // Using loop counter as required
-                
-                // Display message options
-                int choice = displayMessageOptions(scanner);
-                
-                // Process user choice and populate arrays
-                processMessageChoice(choice, message, i + 1);
-            }
-            
-            // Save to JSON file
-            saveMessagesToJSON();
-            
-            showColorfulNotification("✅ Session Complete", 
-                "Total messages sent: " + totalMessagesSent + "\n" +
-                "Stored messages: " + storedCount + "\n" +
-                "Disregarded messages: " + disregardedCount, "success");
-                
-        } catch (NumberFormatException e) {
-            showColorfulNotification("❌ Invalid Input", "Please enter a valid number", "error");
+        if (numMessages <= 0) {
+            System.out.println("❌ Please enter a positive number.");
+            return;
         }
+        
+        System.out.println("📝 Preparing to send " + numMessages + " message(s)...");
+        
+        // For loop as required - runs for assigned number of messages
+        for (int i = 0; i < numMessages; i++) {
+            System.out.println("\n--- Message " + (i + 1) + " of " + numMessages + " ---");
+            
+            Message message = new Message();
+            
+            // Get recipient
+            System.out.print("Enter recipient cell number (+27/027 format): ");
+            String recipient = scanner.nextLine();
+            message.setRecipient(recipient);
+            
+            // Get message content
+            System.out.print("Enter your message (max 250 characters): ");
+            String messageContent = scanner.nextLine();
+            message.setMessageContent(messageContent);
+            
+            // Generate message ID and hash using loop counter
+            message.generateMessageID();
+            message.createMessageHash(i + 1);
+            
+            // Show message options
+            int action = showMessageOptions(scanner);
+            processMessageAction(action, message, i + 1);
+        }
+        
+        System.out.println("\n✅ Session completed! Total messages sent: " + totalMessagesSent);
     }
     
-    private int displayMessageOptions(Scanner scanner) {
-        System.out.println("\n=== Message Options ===");
-        System.out.println("1) Send Message");
-        System.out.println("2) Disregard Message");
-        System.out.println("3) Store Message to send later");
-        System.out.print("Choose an option: ");
+    private int showMessageOptions(Scanner scanner) {
+        System.out.println("\n💡 Message Options:");
+        System.out.println("1) 🚀 Send Message Now");
+        System.out.println("2) ❌ Disregard Message");
+        System.out.println("3) 💾 Store for Later");
+        System.out.print("Choose action (1-3): ");
         
         return scanner.nextInt();
     }
     
-    private void processMessageChoice(int choice, Message message, int messageNumber) {
-        switch (choice) {
+    private void processMessageAction(int action, Message message, int messageNumber) {
+        switch (action) {
             case 1: // Send message
-                String sendResult = message.sendMessage();
-                System.out.println(sendResult);
+                String result = message.sendMessage();
+                System.out.println("📨 " + result);
                 
-                if (sendResult.equals("Message successfully sent.")) {
+                if (result.equals("Message successfully sent.")) {
                     message.setSent(true);
                     messages.add(message);
                     totalMessagesSent++;
-                    // Add to sent messages array
+                    
+                    // Add to arrays
                     if (sentCount < sentMessages.length) {
                         sentMessages[sentCount] = message.getMessageContent();
                         messageHashes[sentCount] = message.getMessageHash();
                         messageIDs[sentCount] = message.getMessageID();
                         sentCount++;
                     }
-                    
-                    // Display full message details
-                    message.printMessageDetails();
                 }
                 break;
                 
             case 2: // Disregard message
                 String disregardResult = message.disregardMessage();
-                System.out.println(disregardResult);
+                System.out.println("🗑️ " + disregardResult);
                 
-                // Add to disregarded messages array
+                // Add to disregarded array
                 if (disregardedCount < disregardedMessages.length) {
                     disregardedMessages[disregardedCount] = message.getMessageContent();
                     disregardedCount++;
@@ -198,188 +151,162 @@ public class QuickChat {
                 message.storeMessage();
                 messages.add(message);
                 
-                // Add to stored messages array
+                // Add to stored array
                 if (storedCount < storedMessages.length) {
                     storedMessages[storedCount] = message.getMessageContent();
                     storedCount++;
                 }
-                
-                System.out.println("Message successfully stored.");
+                System.out.println("💾 Message stored successfully.");
                 break;
                 
             default:
-                System.out.println("Invalid option. Message disregarded.");
+                System.out.println("❌ Invalid action. Message disregarded.");
         }
     }
     
-    // ===== PART 3 FEATURES =====
-    
-    // Display all sent messages
     private void showRecentMessages() {
+        System.out.println("\n" + "=".repeat(40));
+        System.out.println("📨 RECENTLY SENT MESSAGES");
+        System.out.println("=".repeat(40));
+        
         if (sentCount == 0) {
-            showColorfulNotification("📨 No Messages", "No sent messages found.", "info");
+            System.out.println("No messages sent yet.");
             return;
         }
         
-        StringBuilder messageList = new StringBuilder();
-        messageList.append("<html><div style='background: #f8f9fa; padding: 15px; border-radius: 5px;'>");
-        messageList.append("<h3 style='color: #2c3e50;'>📨 Sent Messages</h3>");
-        
         for (int i = 0; i < sentCount; i++) {
-            messageList.append(String.format("<p style='color: #34495e; margin: 5px 0;'><b>%d.</b> %s</p>", 
-                i + 1, sentMessages[i]));
+            if (sentMessages[i] != null) {
+                System.out.println((i + 1) + ". " + sentMessages[i]);
+            }
         }
-        messageList.append("</div></html>");
-        
-        JOptionPane.showMessageDialog(null, messageList.toString(), "📊 Sent Messages", JOptionPane.INFORMATION_MESSAGE);
     }
     
-    // Display comprehensive report
     private void displayMessageReport() {
-        StringBuilder report = new StringBuilder();
-        report.append("<html><div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 15px; border-radius: 10px; color: white; text-align: center;'>");
-        report.append("<h2 style='margin: 0;'>📊 Message Report</h2>");
-        report.append("</div>");
-        report.append("<div style='padding: 15px; background: #f8f9fa; border-radius: 5px; margin-top: 10px;'>");
+        System.out.println("\n" + "=".repeat(40));
+        System.out.println("📊 MESSAGE SYSTEM REPORT");
+        System.out.println("=".repeat(40));
         
-        report.append(String.format("<p style='color: #27ae60;'><b>✅ Sent Messages:</b> %d</p>", sentCount));
-        report.append(String.format("<p style='color: #3498db;'><b>💾 Stored Messages:</b> %d</p>", storedCount));
-        report.append(String.format("<p style='color: #e74c3c;'><b>❌ Disregarded Messages:</b> %d</p>", disregardedCount));
-        report.append(String.format("<p style='color: #f39c12;'><b>📈 Total Processed:</b> %d</p>", sentCount + storedCount + disregardedCount));
+        System.out.println("✅ Sent Messages: " + sentCount);
+        System.out.println("💾 Stored Messages: " + storedCount);
+        System.out.println("❌ Disregarded Messages: " + disregardedCount);
+        System.out.println("📈 Total Processed: " + (sentCount + storedCount + disregardedCount));
         
-        // Show longest message
+        // Find and display longest message
         String longestMessage = findLongestMessage();
         if (longestMessage != null) {
-            report.append(String.format("<p style='color: #9b59b6;'><b>📏 Longest Message:</b> %s</p>", 
-                longestMessage.length() > 50 ? longestMessage.substring(0, 50) + "..." : longestMessage));
+            System.out.println("📏 Longest Message: \"" + 
+                (longestMessage.length() > 50 ? longestMessage.substring(0, 50) + "..." : longestMessage) + "\"");
         }
         
-        report.append("</div></html>");
-        
-        JOptionPane.showMessageDialog(null, report.toString(), "📈 System Report", JOptionPane.INFORMATION_MESSAGE);
+        // Display all message hashes
+        System.out.println("\n🔗 Message Hashes:");
+        for (int i = 0; i < sentCount; i++) {
+            if (messageHashes[i] != null) {
+                System.out.println("  " + (i + 1) + ". " + messageHashes[i]);
+            }
+        }
     }
     
-    // Search features
-    private void searchFeatures(Scanner scanner) {
-        String searchMenu = "<html><div style='background: #f8f9fa; padding: 15px; border-radius: 5px;'>" +
-                           "<h3 style='color: #2c3e50;'>🔍 Search Features</h3>" +
-                           "<p style='color: #34495e;'><b>1)</b> Search by Message ID</p>" +
-                           "<p style='color: #34495e;'><b>2)</b> Search by Recipient</p>" +
-                           "<p style='color: #34495e;'><b>3)</b> Delete by Message Hash</p>" +
-                           "<p style='color: #34495e;'><b>4)</b> Back to Main Menu</p>" +
-                           "</div></html>";
+    private void searchAndManageMessages(Scanner scanner) {
+        System.out.println("\n" + "=".repeat(40));
+        System.out.println("🔍 SEARCH & MANAGE MESSAGES");
+        System.out.println("=".repeat(40));
         
-        String choice = JOptionPane.showInputDialog(null, searchMenu, "🔍 Search Options", JOptionPane.QUESTION_MESSAGE);
+        System.out.println("1) 🔎 Search by Message ID");
+        System.out.println("2) 👤 Search by Recipient");
+        System.out.println("3) 🗑️ Delete by Message Hash");
+        System.out.println("4) ↩️ Back to Main Menu");
+        System.out.print("Choose option (1-4): ");
         
-        if (choice == null) return;
+        int choice = scanner.nextInt();
+        scanner.nextLine(); // Clear buffer
         
         switch (choice) {
-            case "1":
+            case 1:
                 searchByMessageID(scanner);
                 break;
-            case "2":
+            case 2:
                 searchByRecipient(scanner);
                 break;
-            case "3":
+            case 3:
                 deleteByMessageHash(scanner);
                 break;
-            case "4":
+            case 4:
                 return;
             default:
-                showColorfulNotification("❌ Invalid Option", "Please choose 1-4", "error");
+                System.out.println("❌ Invalid option.");
         }
     }
     
     private void searchByMessageID(Scanner scanner) {
-        String searchID = JOptionPane.showInputDialog(null, 
-            "Enter Message ID to search:", "🔍 Search by ID", JOptionPane.QUESTION_MESSAGE);
-        
-        if (searchID == null) return;
-        
-        StringBuilder results = new StringBuilder();
-        results.append("<html><div style='background: #f8f9fa; padding: 15px; border-radius: 5px;'>");
-        results.append("<h4 style='color: #2c3e50;'>Search Results for ID: ").append(searchID).append("</h4>");
+        System.out.print("Enter Message ID to search: ");
+        String searchID = scanner.nextLine();
         
         boolean found = false;
         for (Message msg : messages) {
             if (msg.getMessageID() != null && msg.getMessageID().equals(searchID)) {
-                results.append(String.format("<p style='color: #27ae60;'><b>📱 Recipient:</b> %s</p>", msg.getRecipient()));
-                results.append(String.format("<p style='color: #3498db;'><b>💬 Message:</b> %s</p>", msg.getMessageContent()));
+                System.out.println("✅ Message Found:");
+                System.out.println("   📱 Recipient: " + msg.getRecipient());
+                System.out.println("   💬 Message: " + msg.getMessageContent());
+                System.out.println("   🔗 Hash: " + msg.getMessageHash());
                 found = true;
                 break;
             }
         }
         
         if (!found) {
-            results.append("<p style='color: #e74c3c;'>No messages found with that ID.</p>");
+            System.out.println("❌ No message found with ID: " + searchID);
         }
-        
-        results.append("</div></html>");
-        JOptionPane.showMessageDialog(null, results.toString(), "🔍 Search Results", JOptionPane.INFORMATION_MESSAGE);
     }
     
     private void searchByRecipient(Scanner scanner) {
-        String recipient = JOptionPane.showInputDialog(null, 
-            "Enter recipient number to search:", "🔍 Search by Recipient", JOptionPane.QUESTION_MESSAGE);
+        System.out.print("Enter recipient number to search: ");
+        String recipient = scanner.nextLine();
         
-        if (recipient == null) return;
-        
-        StringBuilder results = new StringBuilder();
-        results.append("<html><div style='background: #f8f9fa; padding: 15px; border-radius: 5px;'>");
-        results.append("<h4 style='color: #2c3e50;'>Messages for: ").append(recipient).append("</h4>");
-        
+        System.out.println("📨 Messages for " + recipient + ":");
         int count = 0;
         for (Message msg : messages) {
             if (msg.getRecipient() != null && msg.getRecipient().contains(recipient)) {
                 count++;
-                results.append(String.format("<p style='color: #34495e; margin: 8px 0; padding: 8px; background: #e8f4fd; border-radius: 3px;'>" +
-                    "<b>%d.</b> %s</p>", count, msg.getMessageContent()));
+                System.out.println("   " + count + ". " + msg.getMessageContent());
             }
         }
         
         if (count == 0) {
-            results.append("<p style='color: #e74c3c;'>No messages found for this recipient.</p>");
+            System.out.println("❌ No messages found for this recipient.");
         }
-        
-        results.append("</div></html>");
-        JOptionPane.showMessageDialog(null, results.toString(), "🔍 Recipient Messages", JOptionPane.INFORMATION_MESSAGE);
     }
     
     private void deleteByMessageHash(Scanner scanner) {
-        String hash = JOptionPane.showInputDialog(null, 
-            "Enter Message Hash to delete:", "🗑️ Delete Message", JOptionPane.QUESTION_MESSAGE);
-        
-        if (hash == null) return;
+        System.out.print("Enter Message Hash to delete: ");
+        String hash = scanner.nextLine();
         
         boolean deleted = false;
         for (int i = 0; i < messages.size(); i++) {
             Message msg = messages.get(i);
             if (msg.getMessageHash() != null && msg.getMessageHash().equals(hash)) {
-                String messageContent = msg.getMessageContent();
+                String content = msg.getMessageContent();
                 messages.remove(i);
                 
                 // Remove from arrays
                 for (int j = 0; j < sentCount; j++) {
-                    if (sentMessages[j] != null && sentMessages[j].equals(messageContent)) {
+                    if (sentMessages[j] != null && sentMessages[j].equals(content)) {
                         sentMessages[j] = null;
                         break;
                     }
                 }
                 
-                showColorfulNotification("✅ Message Deleted", 
-                    "Message \"" + (messageContent.length() > 30 ? messageContent.substring(0, 30) + "..." : messageContent) + 
-                    "\" successfully deleted.", "success");
+                System.out.println("✅ Message deleted: \"" + 
+                    (content.length() > 30 ? content.substring(0, 30) + "..." : content) + "\"");
                 deleted = true;
                 break;
             }
         }
         
         if (!deleted) {
-            showColorfulNotification("❌ Not Found", "No message found with that hash.", "error");
+            System.out.println("❌ No message found with hash: " + hash);
         }
     }
-    
-    // ===== UTILITY METHODS =====
     
     private String findLongestMessage() {
         String longest = "";
@@ -391,241 +318,47 @@ public class QuickChat {
         return longest.isEmpty() ? null : longest;
     }
     
-    private void showColorfulNotification(String title, String message, String type) {
-        String color = "#3498db"; // default blue
-        String emoji = "💡";
+    private void showWelcomeNotification() {
+        JOptionPane.showMessageDialog(null, 
+            "🚀 Welcome to QuickChat Messaging System!\n\n" +
+            "You can now:\n" +
+            "• Send messages to recipients\n" +
+            "• Store messages for later\n" +
+            "• Search and manage your messages\n" +
+            "• View detailed reports", 
+            "💬 QuickChat Activated", 
+            JOptionPane.INFORMATION_MESSAGE);
         
-        switch (type.toLowerCase()) {
-            case "success":
-                color = "#27ae60";
-                emoji = "✅";
-                break;
-            case "error":
-                color = "#e74c3c";
-                emoji = "❌";
-                break;
-            case "warning":
-                color = "#f39c12";
-                emoji = "⚠️";
-                break;
-        }
-        
-        String htmlMessage = String.format(
-            "<html><div style='background: %s; color: white; padding: 15px; border-radius: 8px; text-align: center;'>" +
-            "<h3 style='margin: 0;'>%s %s</h3>" +
-            "<p style='margin: 10px 0 0 0;'>%s</p>" +
-            "</div></html>",
-            color, emoji, title, message
-        );
-        
-        JOptionPane.showMessageDialog(null, htmlMessage, "💬 QuickChat", JOptionPane.INFORMATION_MESSAGE);
+        System.out.println("\n🎉 QuickChat Messaging System Activated!");
+        System.out.println("=====================================");
     }
     
-    // ===== JSON STORAGE METHODS =====
-    
-    private void saveMessagesToJSON() {
-        try {
-            JSONArray jsonArray = new JSONArray();
-            
-            for (Message message : messages) {
-                JSONObject jsonMessage = new JSONObject();
-                jsonMessage.put("messageID", message.getMessageID());
-                jsonMessage.put("messageHash", message.getMessageHash());
-                jsonMessage.put("recipient", message.getRecipient());
-                jsonMessage.put("messageContent", message.getMessageContent());
-                jsonMessage.put("isSent", message.isSent());
-                jsonMessage.put("isStored", message.isStored());
-                jsonMessage.put("sender", message.getSender());
-                
-                jsonArray.put(jsonMessage);
-            }
-            
-            try (FileWriter file = new FileWriter("messages.json")) {
-                file.write(jsonArray.toString(4)); // Indented JSON
-                System.out.println("Messages saved to messages.json");
-            }
-            
-        } catch (IOException e) {
-            System.out.println("Error saving messages to JSON: " + e.getMessage());
-        }
+    private void showExitNotification() {
+        JOptionPane.showMessageDialog(null, 
+            "Thank you for using QuickChat!\n\n" +
+            "Summary:\n" +
+            "• Messages sent: " + totalMessagesSent + "\n" +
+            "• Total in system: " + messages.size() + "\n" +
+            "Come back soon! 👋", 
+            "🚪 QuickChat Closed", 
+            JOptionPane.INFORMATION_MESSAGE);
     }
     
-    private void loadStoredMessagesFromJSON() {
-        try {
-            if (!Files.exists(Paths.get("messages.json"))) {
-                return;
-            }
-            
-            String content = new String(Files.readAllBytes(Paths.get("messages.json")));
-            JSONArray jsonArray = new JSONArray(content);
-            
-            for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject jsonMessage = jsonArray.getJSONObject(i);
-                Message message = new Message();
-                
-                message.setRecipient(jsonMessage.getString("recipient"));
-                message.setMessageContent(jsonMessage.getString("messageContent"));
-                // Note: We can't regenerate the same IDs, so we'll create new ones
-                message.generateMessageID();
-                message.createMessageHash(i + 1);
-                message.setSent(jsonMessage.getBoolean("isSent"));
-                message.setStored(jsonMessage.getBoolean("isStored"));
-                
-                messages.add(message);
-                
-                // Add to appropriate arrays
-                if (message.isSent() && sentCount < sentMessages.length) {
-                    sentMessages[sentCount] = message.getMessageContent();
-                    sentCount++;
-                } else if (message.isStored() && storedCount < storedMessages.length) {
-                    storedMessages[storedCount] = message.getMessageContent();
-                    storedCount++;
-                }
-            }
-            
-            System.out.println("Loaded " + jsonArray.length() + " messages from JSON");
-            
-        } catch (IOException e) {
-            System.out.println("Error loading messages from JSON: " + e.getMessage());
-        }
+    private void displayMainMenu() {
+        System.out.println("\n" + "=".repeat(40));
+        System.out.println("🚀 QUICKCHAT MAIN MENU");
+        System.out.println("=".repeat(40));
+        System.out.println("1) 📤 Send Messages");
+        System.out.println("2) 📨 Show Recent Messages");
+        System.out.println("3) 📊 Display System Report");
+        System.out.println("4) 🔍 Search & Manage Messages");
+        System.out.println("5) 🚪 Exit QuickChat");
+        System.out.println("=".repeat(40));
     }
     
-    // ===== GETTERS FOR TESTING =====
-    
-    public int returnTotalMessages() {
-        return totalMessagesSent;
-    }
-    
-    public List<Message> getMessages() {
-        return messages;
-    }
-    
+    // Getters for testing
+    public int returnTotalMessages() { return totalMessagesSent; }
+    public List<Message> getMessages() { return messages; }
     public String[] getSentMessages() { return sentMessages; }
-    public String[] getDisregardedMessages() { return disregardedMessages; }
-    public String[] getStoredMessages() { return storedMessages; }
-    public String[] getMessageHashes() { return messageHashes; }
-    public String[] getMessageIDs() { return messageIDs; }
     public int getSentCount() { return sentCount; }
-    public int getDisregardedCount() { return disregardedCount; }
-    public int getStoredCount() { return storedCount; }
-
-    // Simple Message implementation used by QuickChat so instances can be created
-    public static class Message {
-        private String recipient;
-        private String messageContent;
-        private String messageID;
-        private String messageHash;
-        private String sender = "QuickChatUser";
-        private boolean isSent = false;
-        private boolean isStored = false;
-
-        public Message() { }
-
-        public void setRecipient(String recipient) { this.recipient = recipient; }
-        public void setMessageContent(String messageContent) { this.messageContent = messageContent; }
-        public void generateMessageID() { this.messageID = java.util.UUID.randomUUID().toString(); }
-        public void createMessageHash(int seed) {
-            int base = (messageContent != null) ? messageContent.hashCode() : 0;
-            this.messageHash = Integer.toHexString(base ^ seed);
-        }
-        public String sendMessage() {
-            this.isSent = true;
-            return "Message successfully sent.";
-        }
-        public String disregardMessage() {
-            this.isSent = false;
-            this.isStored = false;
-            return "Message disregarded.";
-        }
-        public void storeMessage() { this.isStored = true; }
-        public void setSent(boolean sent) { this.isSent = sent; }
-        public void setStored(boolean stored) { this.isStored = stored; }
-        public boolean isSent() { return isSent; }
-        public boolean isStored() { return isStored; }
-        public String getMessageContent() { return messageContent; }
-        public String getMessageHash() { return messageHash; }
-        public String getMessageID() { return messageID; }
-        public String getRecipient() { return recipient; }
-        public String getSender() { return sender; }
-        public void printMessageDetails() {
-            System.out.println("Message ID: " + messageID);
-            System.out.println("Message Hash: " + messageHash);
-            System.out.println("Recipient: " + recipient);
-            System.out.println("Content: " + messageContent);
-            System.out.println("Sent: " + isSent + ", Stored: " + isStored);
-        }
-    }
-}
-
-class QuickChatTest {
-
-    public static void main(String[] args) {
-        QuickChatTest runner = new QuickChatTest();
-        runner.testArraysInitialization();
-        runner.testMessageStorageInArrays();
-        runner.testFindLongestMessage();
-        runner.testTotalMessagesCounter();
-        System.out.println("All QuickChat basic checks passed.");
-    }
-
-    public void testArraysInitialization() {
-        QuickChat quickChat = new QuickChat();
-
-        if (quickChat.getSentMessages() == null) throw new AssertionError("Sent messages array should be initialized");
-        if (quickChat.getDisregardedMessages() == null) throw new AssertionError("Disregarded messages array should be initialized");
-        if (quickChat.getStoredMessages() == null) throw new AssertionError("Stored messages array should be initialized");
-        if (quickChat.getMessageHashes() == null) throw new AssertionError("Message hashes array should be initialized");
-        if (quickChat.getMessageIDs() == null) throw new AssertionError("Message IDs array should be initialized");
-    }
-
-    public void testMessageStorageInArrays() {
-        QuickChat quickChat = new QuickChat();
-
-        // Simulate adding a message
-        QuickChat.Message message = new QuickChat.Message();
-        message.setRecipient("+27834557896");
-        message.setMessageContent("Did you get the cake?");
-        message.generateMessageID();
-        message.createMessageHash(1);
-        message.setSent(true);
-
-        // This would normally be done through processMessageChoice
-        // For testing, we'll simulate the array population
-        String[] sentMessages = quickChat.getSentMessages();
-        sentMessages[0] = message.getMessageContent();
-
-        if (!"Did you get the cake?".equals(sentMessages[0])) {
-            throw new AssertionError("First sent message should match");
-        }
-    }
-
-    public void testFindLongestMessage() {
-        QuickChat quickChat = new QuickChat();
-
-        // Add test messages to arrays
-        String[] sentMessages = quickChat.getSentMessages();
-        sentMessages[0] = "Short";
-        sentMessages[1] = "This is a much longer message that should be identified";
-        sentMessages[2] = "Medium length";
-
-        String longest = "";
-        for (String msg : sentMessages) {
-            if (msg != null && msg.length() > longest.length()) {
-                longest = msg;
-            }
-        }
-
-        if (!"This is a much longer message that should be identified".equals(longest)) {
-            throw new AssertionError("Longest message should be identified");
-        }
-    }
-
-    public void testTotalMessagesCounter() {
-        QuickChat quickChat = new QuickChat();
-
-        // Initial count should be 0
-        if (quickChat.returnTotalMessages() != 0) {
-            throw new AssertionError("Initial total messages should be 0");
-        }
-    }
 }

@@ -1,11 +1,11 @@
-
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
 /**
  * Login class - Handles user registration and authentication
+ * Linked to: poe.java (main application)
  */
-class Login {
+public class Login {
     private String storedUsername;
     private String storedPassword;
     private String storedCellPhone;
@@ -20,11 +20,8 @@ class Login {
         // At least 8 characters
         if (password.length() < 8) return false;
         
-        // Contains capital letter
         boolean hasCapital = false;
-        // Contains number
         boolean hasNumber = false;
-        // Contains special character
         boolean hasSpecial = false;
         
         for (char c : password.toCharArray()) {
@@ -48,30 +45,36 @@ class Login {
     // Register user with validation
     public String registerUser(String username, String password, String cellPhone) {
         StringBuilder message = new StringBuilder();
+        boolean usernameValid = false;
+        boolean passwordValid = false;
+        boolean cellphoneValid = false;
         
         // Check username
         if (!checkUserName(username)) {
-            message.append("Username is not correctly formatted, please ensure that your username contains an underscore and is no more than five characters in length.\n");
+            message.append("❌ Username is not correctly formatted. Must contain '_' and be ≤5 characters.\n");
         } else {
-            message.append("Username successfully captured.\n");
+            message.append("✅ Username successfully captured.\n");
+            usernameValid = true;
         }
         
         // Check password
         if (!checkPasswordComplexity(password)) {
-            message.append("Password is not correctly formatted; please ensure that the password contains at least eight characters, a capital letter, a number, and a special character.\n");
+            message.append("❌ Password must have: 8+ chars, capital letter, number, and special character.\n");
         } else {
-            message.append("Password successfully captured.\n");
+            message.append("✅ Password successfully captured.\n");
+            passwordValid = true;
         }
         
         // Check cell phone
         if (!checkCellPhoneNumber(cellPhone)) {
-            message.append("Cell phone number incorrectly formatted or does not contain international code.\n");
+            message.append("❌ Cell phone number must start with +27/027 and have 9 digits after.\n");
         } else {
-            message.append("Cell phone number successfully added.\n");
+            message.append("✅ Cell phone number successfully added.\n");
+            cellphoneValid = true;
         }
         
         // If all validations passed, store the credentials
-        if (checkUserName(username) && checkPasswordComplexity(password) && checkCellPhoneNumber(cellPhone)) {
+        if (usernameValid && passwordValid && cellphoneValid) {
             this.storedUsername = username;
             this.storedPassword = password;
             this.storedCellPhone = cellPhone;
@@ -89,9 +92,9 @@ class Login {
     // Return login status message
     public String returnLoginStatus(boolean loginStatus, String firstName, String lastName) {
         if (loginStatus) {
-            return "Welcome " + firstName + ", " + lastName + " it is great to see you again.";
+            return "🎉 Welcome " + firstName + " " + lastName + ", it is great to see you again!";
         } else {
-            return "Username or password incorrect, please try again.";
+            return "❌ Username or password incorrect, please try again.";
         }
     }
     
@@ -108,4 +111,3 @@ class Login {
         return storedCellPhone;
     }
 }
-
