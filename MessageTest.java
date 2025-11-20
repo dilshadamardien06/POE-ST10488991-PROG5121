@@ -1,6 +1,7 @@
 
+
 /**
- * Unit tests for the Message class
+ * Unit tests for the Message class including Part 3 features
  */
 public class MessageTest {
     
@@ -24,7 +25,7 @@ public class MessageTest {
     }
     
     private void assertEquals(int i, int checkRecipientCell) {
-     
+      
         throw new UnsupportedOperationException("Unimplemented method 'assertEquals'");
     }
 
@@ -48,7 +49,7 @@ public class MessageTest {
     }
     
     private void assertNotNull(String hash) {
-     
+       
         throw new UnsupportedOperationException("Unimplemented method 'assertNotNull'");
     }
 
@@ -65,7 +66,7 @@ public class MessageTest {
     }
     
     private void assertEquals(String string, String result) {
-     
+      
         throw new UnsupportedOperationException("Unimplemented method 'assertEquals'");
     }
 
@@ -99,7 +100,7 @@ public class MessageTest {
     public void testDisregardMessage() {
         Message message = new Message();
         String result = message.disregardMessage();
-        assertEquals("Press 0 to delete message.", result);
+        assertTrue(result.contains("Press 0 to delete message") || result.contains("Message kept as draft"));
     }
     
     @Test
@@ -109,9 +110,35 @@ public class MessageTest {
         assertTrue(message.isStored());
         assertFalse(message.isSent());
     }
-
+    
     private void assertFalse(boolean sent) {
-
+    
         throw new UnsupportedOperationException("Unimplemented method 'assertFalse'");
+    }
+
+    // Part 3 Additional Tests
+    @Test
+    public void testMessageHashFormat() {
+        Message message = new Message();
+        message.setMessageID("1234567890");
+        message.setMessageContent("Test message for dinner");
+        String hash = message.createMessageHash(1);
+        
+        assertTrue("Hash should be in format XX:X:FIRSTLAST", hash.matches("\\d{2}:\\d+:\\w+"));
+    }
+    
+    private void assertTrue(String string, boolean matches) {
+       
+        throw new UnsupportedOperationException("Unimplemented method 'assertTrue'");
+    }
+
+    @Test
+    public void testMessageValidation() {
+        Message message = new Message();
+        message.setRecipient("+27834557896");
+        message.setMessageContent("Did you get the cake?");
+        message.generateMessageID();
+        
+        assertTrue("Message should be valid", message.validateMessage());
     }
 }

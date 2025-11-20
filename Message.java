@@ -346,4 +346,9 @@ public class Message {
             messageContent.length() > 30 ? messageContent.substring(0, 30) + "..." : messageContent
         );
     }
+
+    public void setMessageID(String string) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setMessageID'");
+    }
 }

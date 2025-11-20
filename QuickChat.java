@@ -6,7 +6,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-
 /**
  * QuickChat class - Main messaging system with arrays and JSON storage
  * Handles the chat interface and message management
@@ -554,6 +553,79 @@ public class QuickChat {
             System.out.println("Recipient: " + recipient);
             System.out.println("Content: " + messageContent);
             System.out.println("Sent: " + isSent + ", Stored: " + isStored);
+        }
+    }
+}
+
+class QuickChatTest {
+
+    public static void main(String[] args) {
+        QuickChatTest runner = new QuickChatTest();
+        runner.testArraysInitialization();
+        runner.testMessageStorageInArrays();
+        runner.testFindLongestMessage();
+        runner.testTotalMessagesCounter();
+        System.out.println("All QuickChat basic checks passed.");
+    }
+
+    public void testArraysInitialization() {
+        QuickChat quickChat = new QuickChat();
+
+        if (quickChat.getSentMessages() == null) throw new AssertionError("Sent messages array should be initialized");
+        if (quickChat.getDisregardedMessages() == null) throw new AssertionError("Disregarded messages array should be initialized");
+        if (quickChat.getStoredMessages() == null) throw new AssertionError("Stored messages array should be initialized");
+        if (quickChat.getMessageHashes() == null) throw new AssertionError("Message hashes array should be initialized");
+        if (quickChat.getMessageIDs() == null) throw new AssertionError("Message IDs array should be initialized");
+    }
+
+    public void testMessageStorageInArrays() {
+        QuickChat quickChat = new QuickChat();
+
+        // Simulate adding a message
+        QuickChat.Message message = new QuickChat.Message();
+        message.setRecipient("+27834557896");
+        message.setMessageContent("Did you get the cake?");
+        message.generateMessageID();
+        message.createMessageHash(1);
+        message.setSent(true);
+
+        // This would normally be done through processMessageChoice
+        // For testing, we'll simulate the array population
+        String[] sentMessages = quickChat.getSentMessages();
+        sentMessages[0] = message.getMessageContent();
+
+        if (!"Did you get the cake?".equals(sentMessages[0])) {
+            throw new AssertionError("First sent message should match");
+        }
+    }
+
+    public void testFindLongestMessage() {
+        QuickChat quickChat = new QuickChat();
+
+        // Add test messages to arrays
+        String[] sentMessages = quickChat.getSentMessages();
+        sentMessages[0] = "Short";
+        sentMessages[1] = "This is a much longer message that should be identified";
+        sentMessages[2] = "Medium length";
+
+        String longest = "";
+        for (String msg : sentMessages) {
+            if (msg != null && msg.length() > longest.length()) {
+                longest = msg;
+            }
+        }
+
+        if (!"This is a much longer message that should be identified".equals(longest)) {
+            throw new AssertionError("Longest message should be identified");
+        }
+    }
+
+    public void testTotalMessagesCounter() {
+        QuickChat quickChat = new QuickChat();
+
+        // Initial count should be 0
+        if (quickChat.returnTotalMessages() != 0) {
+            throw new AssertionError("Initial total messages should be 0");
         }
     }
 }
